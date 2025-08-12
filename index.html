@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>School Score System</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 18px;
+        background: #f5f7f9;
+        color: #222;
+      }
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .sign-out-btn {
+        background: #d9534f;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+      .card {
+        background: #fff;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        flex: 1 1 360px;
+        min-width: 320px;
+      }
+      h1,
+      h2 {
+        margin: 4px 0 12px 0;
+      }
+      label {
+        display: block;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        padding: 8px;
+        margin-top: 6px;
+        box-sizing: border-box;
+        border-radius: 6px;
+        border: 1px solid #cfd8dc;
+        font-family: inherit;
+      }
+      button.primary {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #6c757d;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border: 1px solid #e0e0e0;
+        padding: 8px;
+        text-align: center;
+        font-size: 13px;
+      }
+      th {
+        background: #007bff;
+        color: #fff;
+      }
+      .status-pass {
+        color: green;
+        font-weight: bold;
+      }
+      .status-fail {
+        color: red;
+        font-weight: bold;
+      }
+      .comment-block {
+        border: 1px solid #e0e0e0;
+        padding: 8px;
+        border-radius: 6px;
+        margin-top: 8px;
+      }
+      .response {
+        background: #e8f4ff;
+        padding: 8px;
+        border-left: 4px solid #007bff;
+        border-radius: 4px;
+      }
+      small.hint {
+        color: #666;
+        display: block;
+        margin-top: 6px;
+      }
+      .inline {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .small-input {
+        width: 120px;
+      }
+      .login-container {
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .login-title {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .role-selector {
+        margin: 20px 0;
+        text-align: center;
+      }
+      .role-btn {
+        padding: 10px 15px;
+        margin: 0 5px;
+        background: #e0e0e0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .role-btn.active {
+        background: #007bff;
+        color: white;
+      }
+      .hidden {
+        display: none;
+      }
+      .credential-box {
+        background: #dff0d8;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+      @media (max-width: 900px) {
+        .container {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+      <h1 class="login-title">School Score System</h1>
+
+      <div class="role-selector">
+        <button class="role-btn active" onclick="setRole('student')">
+          Student
+        </button>
+        <button class="role-btn" onclick="setRole('teacher')">Teacher</button>
+        <button class="role-btn" onclick="setRole('admin')">Admin</button>
+      </div>
+
+      <form id="loginForm" onsubmit="login(event)">
+        <input type="hidden" id="role" value="student" />
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" required />
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" required />
+        <button type="reset" class="primary">Clear</button>
+        <button type="submit" class="primary">Login</button>
+      </form>
+
+      <div id="loginMessage" style="margin-top: 15px; color: red"></div>
+    </div>
+
+    <!-- Register Page (Admin/Teacher only) -->
+    <div id="registerPage" class="hidden">
+      <div class="top-bar">
+        <div>
+          <h1>Register New Student</h1>
+          <small>Grades 9 — 12 • Admin Panel</small>
+        </div>
+        <div>
+          <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="card">
+          <h2>Register Student</h2>
+
+          <label>First Name:</label>
+          <input type="text" id="firstName" placeholder="First Name" required />
+
+          <label>Middle Name:</label>
+          <input
+            type="text"
+            id="middleName"
+            placeholder="Middle Name"
+            required
+          />
+
+          <label>Last Name:</label>
+          <input type="text" id="lastName" placeholder="Last Name" required />
+
+          <label>Student Phone Number:</label>
+          <input type="tel" id="phone" placeholder="Phone Number" required />
+
+          <label>Emergency Contact Name:</label>
+          <input
+            type="text"
+            id="emergencyName"
+            placeholder="Emergency Contact"
+            required
+          />
+
+          <label>Emergency Contact Phone:</label>
+          <input
+            type="tel"
+            id="emergencyPhone"
+            placeholder="Emergency Phone"
+            required
+          />
+
+          <label>Student Gender:</label>
+          <select id="gender">
+            <option value=""> Select Gender </option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+
+          <label>Grade:</label>
+          <select id="grade">
+            <option value=""> Select Grade </option>
+            <option value="9">Grade 9</option>
+            <option value="10">Grade 10</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
+          </select>
+
+          <button id="registerBtn" class="primary" style="margin-top: 10px">
+            Register Student
+          </button>
+          <div id="registerMsg" style="margin-top: 8px; color: green"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teacher Dashboard -->
+    <div id="teacherPage" class="hidden">
+      <div class="top-bar">
+        <div>
+          <h1>Teacher Dashboard</h1>
+          <small>Enter Scores • View Comments • Manage Students</small>
+        </div>
+        <div>
+          <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Enter/Update Scores -->
+        <div class="card">
+          <div id="teacherInfo" style="margin-bottom: 15px; padding: 10px; background: #e8f4ff; border-radius: 6px;">
+            <!-- Teacher info will be displayed here -->
+          </div>
+          
+          <h2>Enter/Update Scores</h2>
+
+          <label>Grade:</label>
+          <select id="teacherGrade">
+            <option value="9">Grade 9</option>
+            <option value="10">Grade 10</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
+          </select>
+
+          <label>Choose Student:</label>
+          <div class="inline">
+            <select id="teacherStudentSelect"></select>
+            <input
+              id="teacherStudentId"
+              class="small-input"
+              placeholder="Or type ID"
+            />
+          </div>
+
+          <label>Subject:</label>
+          <select id="teacherSubject"></select>
+
+          <label>Term:</label>
+          <select id="teacherTerm">
+            <option>Term 1</option>
+            <option>Term 2</option>
+          </select>
+
+          <label>Exam Type:</label>
+          <select id="teacherExam">
+            <option>Assignment</option>
+            <option>Midterm</option>
+            <option>Final</option>
+            <option>Quiz</option>
+          </select>
+
+          <label>Score (0–100):</label>
+          <input id="teacherScore" type="number" min="0" max="100" />
+
+          <button id="submitScoreBtn" class="primary" style="margin-top: 10px">
+            Submit/Update Score
+          </button>
+          <div id="teacherMsg" style="margin-top: 10px; color: green"></div>
+        </div>
+
+        <!-- Pending Comments -->
+        <div class="card">
+          <h2>Pending Comments</h2>
+          <div id="teacherCommentsContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Dashboard -->
+    <div id="studentPage" class="hidden">
+      <div class="top-bar">
+        <div>
+          <h1>Student Dashboard</h1>
+          <small>View Scores • Check Status • Communicate with Teachers</small>
+        </div>
+        <div>
+          <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="card">
+          <h2>My Scores</h2>
+
+          <label>Term:</label>
+          <select id="viewTerm">
+            <option value="Term 1">Term 1</option>
+            <option value="Term 2">Term 2</option>
+            <option value="All">All</option>
+          </select>
+
+          <button id="viewScoresBtn" class="primary" style="margin-top: 10px">
+            View Scores
+          </button>
+          <div id="scoresTable" style="margin-top: 14px"></div>
+        </div>
+
+        <div class="card">
+          <h2>Send Comment/Question</h2>
+          <textarea
+            id="studentComment"
+            rows="3"
+            placeholder="Write your comment or question..."
+          ></textarea>
+          <button id="sendCommentBtn" class="primary" style="margin-top: 8px">
+            Send Comment
+          </button>
+          <div
+            id="studentCommentMsg"
+            style="margin-top: 8px; color: green"
+          ></div>
+
+          <h3 style="margin-top: 20px">My Comments</h3>
+          <div id="studentCommentsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminPage" class="hidden">
+      <div class="top-bar">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <small>Manage Students • Teachers • Scores • Comments</small>
+        </div>
+        <div>
+          <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Teacher Registration -->
+        <div class="card">
+          <h2>Register New Teacher</h2>
+          
+          <label>First Name:</label>
+          <input type="text" id="teacherFirstName" placeholder="First Name" required />
+          
+          <label>Last Name:</label>
+          <input type="text" id="teacherLastName" placeholder="Last Name" required />
+          
+          <label>Subject Specialty:</label>
+          <select id="teacherSubjectSpecialty">
+            <option value="Mathematics">Mathematics</option>
+            <option value="English">English</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+            <option value="History">History</option>
+            <option value="Geography">Geography</option>
+            <option value="Computer">Computer</option>
+          </select>
+          
+          <label>Grade Levels:</label>
+          <div>
+            <input type="checkbox" id="grade9" value="9" checked>
+            <label for="grade9">Grade 9</label>
+            
+            <input type="checkbox" id="grade10" value="10" checked>
+            <label for="grade10">Grade 10</label>
+            
+            <input type="checkbox" id="grade11" value="11">
+            <label for="grade11">Grade 11</label>
+            
+            <input type="checkbox" id="grade12" value="12">
+            <label for="grade12">Grade 12</label>
+          </div>
+          
+          <button onclick="registerTeacher()" class="primary" style="margin-top:10px;">
+            Register Teacher
+          </button>
+          <div id="teacherRegisterMsg" style="margin-top:8px;"></div>
+        </div>
+
+        <!-- All Students -->
+        <div class="card">
+          <h2>All Students</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Grade</th>
+                <th>Gender</th>
+                <th>Phone</th>
+                <th>Emergency Contact</th>
+                <th>Username</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody"></tbody>
+          </table>
+          <button
+            onclick="showPage('registerPage')"
+            class="primary"
+            style="margin-top: 15px"
+          >
+            Add New Student
+          </button>
+        </div>
+
+        <!-- All Teachers -->
+        <div class="card">
+          <h2>All Teachers</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Subject</th>
+                <th>Grades</th>
+                <th>Username</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="teachersTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- All Comments -->
+        <div class="card">
+          <h2>All Comments</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Comment</th>
+                <th>Response</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="commentsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ======================
+      // Data Storage
+      // ======================
+      const gradeSubjects = {
+        9: [
+          "Mathematics",
+          "English",
+          "Physics",
+          "Chemistry",
+          "Biology",
+          "History",
+          "Geography",
+          "Computer",
+          "Civics",
+        ],
+        10: [
+          "Mathematics",
+          "English",
+          "Chemistry",
+          "Biology",
+          "Geography",
+          "History",
+          "Economics",
+          "Computer",
+          "PhysicalEducation",
+        ],
+        11: [
+          "Mathematics",
+          "English",
+          "Physics",
+          "Chemistry",
+          "Biology",
+          "Economics",
+          "Computer",
+          "Philosophy",
+          "Elective",
+        ],
+        12: [
+          "Mathematics",
+          "English",
+          "Physics",
+          "Chemistry",
+          "Biology",
+          "Business",
+          "Computer",
+          "civcis",
+          "HEP",
+        ],
+      };
+
+      const users = {
+        admin: [
+          { username: "admin", password: "admin123", name: "System Admin" }
+        ]
+      };
+
+      let students = JSON.parse(localStorage.getItem("students")) || [
+        {
+          id: 101,
+          firstName: "Fikre",
+          middleName: "Alem",
+          lastName: "Girma",
+          gender: "Male",
+          grade: 9,
+          phone: "0911223344",
+          emergencyName: "Parent",
+          emergencyPhone: "0911223355",
+          username: "fikre.gir",
+          password: "student123",
+        },
+        {
+          id: 102,
+          firstName: "Sara",
+          middleName: "Bekele",
+          lastName: "Tesfaye",
+          gender: "Female",
+          grade: 9,
+          phone: "0911223366",
+          emergencyName: "Parent",
+          emergencyPhone: "0911223377",
+          username: "sara.tes",
+          password: "student123",
+        },
+        {
+          id: 103,
+          firstName: "Abel",
+          middleName: "Tadesse",
+          lastName: "Kebede",
+          gender: "Male",
+          grade: 9,
+          phone: "0911223388",
+          emergencyName: "Parent",
+          emergencyPhone: "0911223399",
+          username: "abel.keb",
+          password: "student123",
+        }
+      ];
+
+      let teachers = JSON.parse(localStorage.getItem("teachers")) || [
+        {
+          id: 1,
+          firstName: "John",
+          lastName: "Smith",
+          username: "john.smi5",
+          password: "321",
+          subjectSpecialty: "Mathematics",
+          gradeLevels: [9, 10],
+        }
+      ];
+
+      let scores = JSON.parse(localStorage.getItem("scores")) || [
+        // Fikre (ID: 101)
+        { student_id: 101, subject: "Mathematics", exam_type: "Assignment", score: 85, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 101, subject: "Mathematics", exam_type: "Midterm", score: 78, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 101, subject: "Mathematics", exam_type: "Final", score: 90, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 101, subject: "Mathematics", exam_type: "Assignment", score: 80, term: "Term 2", entered_by: "john.smi5" },
+        { student_id: 101, subject: "English", exam_type: "Assignment", score: 75, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 101, subject: "English", exam_type: "Midterm", score: 70, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 101, subject: "English", exam_type: "Midterm", score: 82, term: "Term 2", entered_by: "john.smi5" },
+        { student_id: 101, subject: "Physics", exam_type: "Assignment", score: 82, term: "Term 2", entered_by: "john.smi5" },
+        // Sara (ID: 102)
+        { student_id: 102, subject: "Mathematics", exam_type: "Assignment", score: 80, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 102, subject: "Mathematics", exam_type: "Midterm", score: 85, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 102, subject: "Mathematics", exam_type: "Assignment", score: 88, term: "Term 2", entered_by: "john.smi5" },
+        { student_id: 102, subject: "English", exam_type: "Assignment", score: 88, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 102, subject: "English", exam_type: "Midterm", score: 90, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 102, subject: "English", exam_type: "Midterm", score: 85, term: "Term 2", entered_by: "john.smi5" },
+        // Abel (ID: 103)
+        { student_id: 103, subject: "Mathematics", exam_type: "Assignment", score: 70, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 103, subject: "English", exam_type: "Assignment", score: 65, term: "Term 1", entered_by: "john.smi5" },
+        { student_id: 103, subject: "Physics", exam_type: "Assignment", score: 60, term: "Term 2", entered_by: "john.smi5" }
+      ];
+
+      let comments = JSON.parse(localStorage.getItem("comments")) || [
+        {
+          id: 1,
+          student_id: 101,
+          text: "When will the next exam be?",
+          date: new Date().toISOString(),
+          status: "responded",
+          response: "Next exam is on June 15th.",
+          responded_by: "john.smi5",
+          response_date: new Date().toISOString(),
+        },
+      ];
+
+      let currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+
+      // Utility Functions
+      function saveData() {
+        localStorage.setItem("students", JSON.stringify(students));
+        localStorage.setItem("teachers", JSON.stringify(teachers));
+        localStorage.setItem("scores", JSON.stringify(scores));
+        localStorage.setItem("comments", JSON.stringify(comments));
+      }
+
+      function showPage(pageId) {
+        document.querySelectorAll('[id$="Page"]').forEach((page) => {
+          page.classList.add("hidden");
+        });
+        document.getElementById(pageId).classList.remove("hidden");
+      }
+
+      function nextStudentId() {
+        const ids = students.map((s) => s.id);
+        return ids.length ? Math.max(...ids) + 1 : 100;
+      }
+
+      function nextTeacherId() {
+        const ids = teachers.map((t) => t.id);
+        return ids.length ? Math.max(...ids) + 1 : 1;
+      }
+
+      function nextCommentId() {
+        return comments.length ? Math.max(...comments.map((c) => c.id)) + 1 : 1;
+      }
+
+      function findStudent(id) {
+        return students.find((s) => Number(s.id) === Number(id));
+      }
+
+      function ordinal(n) {
+        const s = ["th", "st", "nd", "rd"],
+          v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+      }
+
+      function generateUsername(firstName, lastName) {
+        const cleanFirstName = firstName.toLowerCase().replace(/[^a-z]/g, "");
+        const cleanLastName = lastName
+          .toLowerCase()
+          .replace(/[^a-z]/g, "")
+          .slice(0, 3);
+        return `${cleanFirstName}.${cleanLastName}`;
+      }
+
+      function generateTeacherUsername(firstName, lastName) {
+        const cleanFirst = firstName.toLowerCase().replace(/[^a-z]/g, "");
+        const cleanLast = lastName.toLowerCase().replace(/[^a-z]/g, "").substring(0, 3);
+        const randomDigit = Math.floor(Math.random() * 10);
+        return `${cleanFirst}.${cleanLast}${randomDigit}`;
+      }
+
+      // Login/Logout Functions
+      function setRole(role) {
+        document.getElementById("role").value = role;
+        const buttons = document.querySelectorAll(".role-btn");
+        buttons.forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.textContent.toLowerCase() === role) {
+            btn.classList.add("active");
+          }
+        });
+      }
+
+      function login(event) {
+        event.preventDefault();
+        const role = document.getElementById("role").value;
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        let user;
+        if (role === "student") {
+          user = students.find(
+            (s) => s.username === username && s.password === password
+          );
+        } else if (role === "teacher") {
+          user = teachers.find(
+            (t) => t.username === username && t.password === password
+          );
+        } else if (role === "admin") {
+          user = users.admin.find(
+            (u) => u.username === username && u.password === password
+          );
+        }
+
+        if (user) {
+          currentUser = {
+            role,
+            id: user.id || null,
+            username: user.username,
+            name: user.name || `${user.firstName} ${user.lastName}`,
+            grade: user.grade || null,
+          };
+          sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+          if (role === "student") showPage("studentPage");
+          else if (role === "teacher") showPage("teacherPage");
+          else if (role === "admin") showPage("adminPage");
+
+          initializeDashboard();
+        } else {
+          document.getElementById("loginMessage").textContent =
+            "Invalid credentials";
+        }
+      }
+
+      function signOut() {
+        sessionStorage.removeItem("currentUser");
+        currentUser = null;
+        showPage("loginPage");
+        document.getElementById("loginForm").reset();
+        document.getElementById("loginMessage").textContent = "";
+      }
+
+      // Dashboard Initialization
+      function initializeDashboard() {
+        if (!currentUser) {
+          showPage("loginPage");
+          return;
+        }
+
+        if (currentUser.role === "admin" || currentUser.role === "teacher") {
+          document
+            .getElementById("registerBtn")
+            .addEventListener("click", registerStudent);
+        }
+
+        if (currentUser.role === "teacher") {
+          const teacher = teachers.find(t => t.id === currentUser.id);
+          if (teacher) {
+            document.getElementById("teacherInfo").innerHTML = `
+              <p><strong>Teacher:</strong> ${teacher.firstName} ${teacher.lastName}</p>
+              <p><strong>Specialty:</strong> ${teacher.subjectSpecialty}</p>
+              <p><strong>Grades:</strong> ${teacher.gradeLevels.join(", ")}</p>
+            `;
+          }
+
+          const teacherGradeEl = document.getElementById("teacherGrade");
+          const teacherSubjectEl = document.getElementById("teacherSubject");
+          const teacherStudentSelect = document.getElementById(
+            "teacherStudentSelect"
+          );
+
+          function populateStudentSelects() {
+            teacherStudentSelect.innerHTML =
+              '<option value="">-- Select student --</option>';
+            students
+              .sort((a, b) => {
+                const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+                const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+                return nameA.localeCompare(nameB);
+              })
+              .forEach((s) => {
+                const label = `${s.id} — ${s.firstName} ${s.lastName} (G${s.grade})`;
+                teacherStudentSelect.innerHTML += `<option value="${s.id}">${label}</option>`;
+              });
+          }
+
+          function fillTeacherSubjects() {
+            const g = teacherGradeEl.value;
+            const subs = gradeSubjects[g] || [];
+            teacherSubjectEl.innerHTML =
+              '<option value="">-- Select Subject --</option>';
+            subs.forEach(
+              (s) =>
+                (teacherSubjectEl.innerHTML += `<option value="${s}">${s}</option>`)
+            );
+          }
+
+          teacherGradeEl.addEventListener("change", () => {
+            fillTeacherSubjects();
+            populateStudentSelects();
+          });
+
+          fillTeacherSubjects();
+          populateStudentSelects();
+
+          document
+            .getElementById("submitScoreBtn")
+            .addEventListener("click", submitScore);
+          renderTeacherComments();
+        }
+
+        if (currentUser.role === "student") {
+          document
+            .getElementById("viewScoresBtn")
+            .addEventListener("click", viewScores);
+          document
+            .getElementById("sendCommentBtn")
+            .addEventListener("click", sendComment);
+          renderStudentComments();
+        }
+
+        if (currentUser.role === "admin") {
+          renderStudentsTable();
+          renderTeachersTable();
+          renderCommentsTable();
+        }
+      }
+
+      // Register Student
+      function registerStudent() {
+        const firstName = document.getElementById("firstName").value.trim();
+        const middleName = document.getElementById("middleName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const emergencyName = document
+          .getElementById("emergencyName")
+          .value.trim();
+        const emergencyPhone = document
+          .getElementById("emergencyPhone")
+          .value.trim();
+        const gender = document.getElementById("gender").value;
+        const grade = document.getElementById("grade").value;
+        const msgEl = document.getElementById("registerMsg");
+        msgEl.textContent = "";
+
+        if (
+          !firstName ||
+          !middleName ||
+          !lastName ||
+          !phone ||
+          !emergencyName ||
+          !emergencyPhone ||
+          !gender ||
+          !grade
+        ) {
+          alert("Please fill all fields");
+          return;
+        }
+
+        const newId = nextStudentId();
+        const username = generateUsername(firstName, lastName);
+        const password = "student123";
+
+        if (students.some((s) => s.username === username)) {
+          alert(
+            "Username already exists. Please modify the first or last name."
+          );
+          return;
+        }
+
+        const student = {
+          id: newId,
+          firstName,
+          middleName,
+          lastName,
+          phone,
+          emergencyName,
+          emergencyPhone,
+          gender,
+          grade: Number(grade),
+          username,
+          password,
+        };
+
+        students.push(student);
+        saveData();
+
+        msgEl.innerHTML = `
+          <div class="credential-box">
+            <p>Registered ${firstName} ${lastName} with ID ${newId}</p>
+            <p><strong>Username:</strong> ${username}</p>
+            <p><strong>Password:</strong> ${password}</p>
+          </div>
+        `;
+
+        document.getElementById("firstName").value = "";
+        document.getElementById("middleName").value = "";
+        document.getElementById("lastName").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("emergencyName").value = "";
+        document.getElementById("emergencyPhone").value = "";
+        document.getElementById("gender").value = "";
+        document.getElementById("grade").value = "";
+
+        if (currentUser.role === "admin") {
+          renderStudentsTable();
+        }
+      }
+
+      // Register Teacher
+      function registerTeacher() {
+        const firstName = document.getElementById("teacherFirstName").value.trim();
+        const lastName = document.getElementById("teacherLastName").value.trim();
+        const subject = document.getElementById("teacherSubjectSpecialty").value;
+        
+        const gradeLevels = [];
+        if (document.getElementById("grade9").checked) gradeLevels.push(9);
+        if (document.getElementById("grade10").checked) gradeLevels.push(10);
+        if (document.getElementById("grade11").checked) gradeLevels.push(11);
+        if (document.getElementById("grade12").checked) gradeLevels.push(12);
+        
+        const msgEl = document.getElementById("teacherRegisterMsg");
+        msgEl.textContent = "";
+        
+        if (!firstName || !lastName || gradeLevels.length === 0) {
+          alert("Please fill all required fields");
+          return;
+        }
+        
+        const username = generateTeacherUsername(firstName, lastName);
+        if (teachers.some(t => t.username === username)) {
+          const newUsername = generateTeacherUsername(firstName, lastName);
+          if (teachers.some(t => t.username === newUsername)) {
+            alert("Username already exists. Please try different name.");
+            return;
+          }
+        }
+        
+        const newTeacher = {
+          id: nextTeacherId(),
+          firstName,
+          lastName,
+          username,
+          password: "321",
+          subjectSpecialty: subject,
+          gradeLevels
+        };
+        
+        teachers.push(newTeacher);
+        saveData();
+        
+        msgEl.innerHTML = `
+          <div class="credential-box">
+            <p>Teacher registered successfully!</p>
+            <p><strong>Username:</strong> ${username}</p>
+            <p><strong>Password:</strong> 321</p>
+          </div>
+        `;
+        
+        document.getElementById("teacherFirstName").value = "";
+        document.getElementById("teacherLastName").value = "";
+        
+        renderTeachersTable();
+      }
+
+      // Teacher Functions
+      function submitScore() {
+        const grade = Number(document.getElementById("teacherGrade").value);
+        const selectedId =
+          Number(document.getElementById("teacherStudentSelect").value) || null;
+        const typedId =
+          Number(document.getElementById("teacherStudentId").value) || null;
+        const studentId = typedId || selectedId;
+        const subject = document.getElementById("teacherSubject").value;
+        const term = document.getElementById("teacherTerm").value;
+        const exam = document.getElementById("teacherExam").value;
+        const score = Number(document.getElementById("teacherScore").value);
+        const msgEl = document.getElementById("teacherMsg");
+
+        if (!studentId || !subject || !term || !exam || isNaN(score)) {
+          alert("Please fill all fields");
+          return;
+        }
+
+        const existingIndex = scores.findIndex(
+          (s) =>
+            s.student_id === studentId &&
+            s.subject === subject &&
+            s.term === term &&
+            s.exam_type === exam
+        );
+
+        if (existingIndex >= 0) {
+          scores[existingIndex].score = score;
+          msgEl.textContent = `Updated score for student ${studentId} in ${subject}`;
+        } else {
+          scores.push({
+            student_id: studentId,
+            subject,
+            exam_type: exam,
+            score,
+            term,
+            entered_by: currentUser.username,
+          });
+          msgEl.textContent = `Added score for student ${studentId} in ${subject}`;
+        }
+
+        saveData();
+        document.getElementById("teacherScore").value = "";
+      }
+
+      function renderTeacherComments() {
+        const container = document.getElementById("teacherCommentsContainer");
+        container.innerHTML = "";
+
+        const pendingComments = comments.filter((c) => c.status === "pending");
+
+        if (pendingComments.length === 0) {
+          container.innerHTML = "<p>No pending comments.</p>";
+          return;
+        }
+
+        pendingComments.forEach((c) => {
+          const student = students.find((s) => s.id === c.student_id);
+          const div = document.createElement("div");
+          div.className = "comment-block";
+          div.innerHTML = `
+          <p><strong>Student ${c.student_id}${
+            student ? ` (${student.firstName} ${student.lastName})` : ""
+          }:</strong></p>
+          <p>${c.text}</p>
+          <textarea id="resp_${
+            c.id
+          }" rows="3" placeholder="Write response..."></textarea>
+          <button onclick="sendResponse(${
+            c.id
+          })" class="primary" style="margin-top:8px;">Send Response</button>
+        `;
+          container.appendChild(div);
+        });
+      }
+
+      function sendResponse(commentId) {
+        const response = document
+          .getElementById(`resp_${commentId}`)
+          .value.trim();
+        if (!response) {
+          alert("Please write a response");
+          return;
+        }
+
+        const commentIndex = comments.findIndex((c) => c.id === commentId);
+        if (commentIndex >= 0) {
+          comments[commentIndex].response = response;
+          comments[commentIndex].status = "responded";
+          comments[commentIndex].responded_by = currentUser.username;
+          comments[commentIndex].response_date = new Date().toISOString();
+
+          saveData();
+          renderTeacherComments();
+
+          if (currentUser.role === "admin") {
+            renderCommentsTable();
+          }
+        }
+      }
+
+      // Student Functions
+      function viewScores() {
+        const term = document.getElementById("viewTerm").value;
+        const studentId = currentUser.id;
+        const container = document.getElementById("scoresTable");
+
+        const student = students.find((s) => s.id === studentId);
+        if (!student) {
+          container.innerHTML = "<p>Student record not found.</p>";
+          return;
+        }
+
+        const studentScores = scores.filter(
+          (s) =>
+            s.student_id === studentId && (term === "All" || s.term === term)
+        );
+
+        if (studentScores.length === 0 && term === "All") {
+          container.innerHTML = `<p>No scores found.</p>`;
+          return;
+        }
+
+        const subjects = {};
+        const examTypes = ["Assignment", "Midterm", "Final", "Quiz"];
+        const allSubjects = gradeSubjects[student.grade] || [];
+
+        allSubjects.forEach((sub) => {
+          subjects[sub] = {
+            Term1: { Assignment: null, Midterm: null, Final: null, Quiz: null },
+            Term2: { Assignment: null, Midterm: null, Final: null, Quiz: null }
+          };
+        });
+
+        studentScores.forEach((score) => {
+          if (score.term === "Term 1") {
+            subjects[score.subject].Term1[score.exam_type] = score.score;
+          } else if (score.term === "Term 2") {
+            subjects[score.subject].Term2[score.exam_type] = score.score;
+          }
+        });
+
+        let subjectAverages = {};
+        let term1Total = 0;
+        let term2Total = 0;
+        let term1SubjectCount = 0;
+        let term2SubjectCount = 0;
+
+        for (const [subject, terms] of Object.entries(subjects)) {
+          const term1Scores = Object.values(terms.Term1).filter(score => score !== null);
+          const term2Scores = Object.values(terms.Term2).filter(score => score !== null);
+          const term1TotalSub = term1Scores.reduce((sum, score) => sum + score, 0);
+          const term2TotalSub = term2Scores.reduce((sum, score) => sum + score, 0);
+          const subjectAvg = (term1TotalSub > 0 || term2TotalSub > 0) ? (term1TotalSub + term2TotalSub) / 2 : 0;
+
+          subjectAverages[subject] = {
+            term1: { scores: terms.Term1, total: term1TotalSub },
+            term2: { scores: terms.Term2, total: term2TotalSub },
+            overallAvg: subjectAvg
+          };
+
+          term1Total += term1TotalSub;
+          term2Total += term2TotalSub;
+          if (term1TotalSub > 0) term1SubjectCount++;
+          if (term2TotalSub > 0) term2SubjectCount++;
+        }
+
+        const totalScore = term1Total + term2Total;
+        const overallAverage = term2SubjectCount > 0 ? term2Total / term2SubjectCount : (term1SubjectCount > 0 ? term1Total / term1SubjectCount : 0);
+
+        const allStudentsInGrade = students.filter(s => s.grade === student.grade);
+        let studentRankings = [];
+
+        allStudentsInGrade.forEach(s => {
+          const sScores = scores.filter(score => score.student_id === s.id);
+          let sTotalScore = 0;
+
+          gradeSubjects[student.grade].forEach(sub => {
+            const term1Scores = sScores.filter(score => score.subject === sub && score.term === "Term 1");
+            const term2Scores = sScores.filter(score => score.subject === sub && score.term === "Term 2");
+            const term1TotalSub = term1Scores.reduce((sum, score) => sum + score.score, 0);
+            const term2TotalSub = term2Scores.reduce((sum, score) => sum + score.score, 0);
+            sTotalScore += term1TotalSub + term2TotalSub;
+          });
+
+          studentRankings.push({
+            id: s.id,
+            name: `${s.firstName} ${s.lastName}`,
+            total: sTotalScore
+          });
+        });
+
+        studentRankings.sort((a, b) => b.total - a.total);
+        const studentRank = studentRankings.findIndex(r => r.id === studentId) + 1;
+        const totalStudents = studentRankings.length;
+
+        let html = `<p><strong>Student:</strong> ${student.firstName} ${student.lastName} | <strong>Grade:</strong> ${student.grade} | <strong>Rank:</strong> ${studentRank}${ordinal(studentRank)} of ${totalStudents}</p>`;
+
+        html += `<table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Subject</th>
+                    <th colspan="5">Term 1</th>
+                    <th colspan="5">Term 2</th>
+                    <th rowspan="2">Average</th>
+                </tr>
+                <tr>
+                    <th>Assign</th>
+                    <th>Mid</th>
+                    <th>Final</th>
+                    <th>Quiz</th>
+                    <th>Total</th>
+                    <th>Assign</th>
+                    <th>Mid</th>
+                    <th>Final</th>
+                    <th>Quiz</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        for (const [subject, data] of Object.entries(subjectAverages)) {
+          if (term === "All" || (term === "Term 1" && data.term1.total > 0) || (term === "Term 2" && data.term2.total > 0)) {
+            html += `<tr>
+                <td>${subject}</td>
+                <td>${data.term1.scores.Assignment || '-'}</td>
+                <td>${data.term1.scores.Midterm || '-'}</td>
+                <td>${data.term1.scores.Final || '-'}</td>
+                <td>${data.term1.scores.Quiz || '-'}</td>
+                <td>${data.term1.total > 0 ? data.term1.total.toFixed(2) : '-'}</td>
+                <td>${data.term2.scores.Assignment || '-'}</td>
+                <td>${data.term2.scores.Midterm || '-'}</td>
+                <td>${data.term2.scores.Final || '-'}</td>
+                <td>${data.term2.scores.Quiz || '-'}</td>
+                <td>${data.term2.total > 0 ? data.term2.total.toFixed(2) : '-'}</td>
+                <td>${data.overallAvg > 0 ? data.overallAvg.toFixed(2) : '-'}</td>
+            </tr>`;
+          }
+        }
+
+        const status = overallAverage >= 50 ? "Pass" : "Fail";
+        const statusClass = status === "Pass" ? "status-pass" : "status-fail";
+
+        html += `</tbody>
+            <tfoot>
+                <tr>
+                    <th rowspan="2">Overall</th>
+                    <th colspan="4"></th>
+                    <th>${term1Total > 0 ? term1Total.toFixed(2) : '-'}</th>
+                    <th colspan="4"></th>
+                    <th>${term2Total > 0 ? term2Total.toFixed(2) : '-'}</th>
+                    <th class="${statusClass}">
+                        Total: ${totalScore.toFixed(2)}<br>
+                        Avg: ${overallAverage.toFixed(2)}<br>
+                        Rank: ${studentRank}${ordinal(studentRank)}/${totalStudents}<br>
+                        Status: ${status}
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="10"></th>
+                </tr>
+            </tfoot>
+        </table>`;
+
+        container.innerHTML = html;
+      }
+
+      function sendComment() {
+        const text = document.getElementById("studentComment").value.trim();
+        if (!text) {
+          alert("Please write your comment");
+          return;
+        }
+
+        const commentId = nextCommentId();
+
+        comments.push({
+          id: commentId,
+          student_id: currentUser.id,
+          text,
+          date: new Date().toISOString(),
+          status: "pending",
+          response: null,
+          responded_by: null,
+          response_date: null,
+        });
+
+        saveData();
+        document.getElementById("studentCommentMsg").textContent =
+          "Comment sent successfully!";
+        document.getElementById("studentComment").value = "";
+        renderStudentComments();
+
+        if (currentUser.role === "teacher") {
+          renderTeacherComments();
+        } else if (currentUser.role === "admin") {
+          renderCommentsTable();
+        }
+      }
+
+      function renderStudentComments() {
+        const container = document.getElementById("studentCommentsList");
+        container.innerHTML = "";
+
+        const studentComments = comments.filter(
+          (c) => c.student_id === currentUser.id
+        );
+
+        if (studentComments.length === 0) {
+          container.innerHTML = "<p>No comments yet.</p>";
+          return;
+        }
+
+        studentComments.forEach((c) => {
+          const div = document.createElement("div");
+          div.className = "comment-block";
+          div.innerHTML = `
+          <p><strong>${new Date(c.date).toLocaleString()}:</strong> ${
+            c.text
+          }</p>
+          ${
+            c.status === "responded"
+              ? `
+            <div class="response">
+              <strong>Response from teacher (${new Date(
+                c.response_date
+              ).toLocaleString()}):</strong>
+              <p>${c.response}</p>
+            </div>
+          `
+              : `<p><em>Waiting for teacher response...</em></p>`
+          }
+        `;
+          container.appendChild(div);
+        });
+      }
+
+      // Admin Functions
+      function renderStudentsTable() {
+        const tbody = document.getElementById("studentsTableBody");
+        tbody.innerHTML = "";
+
+        students
+          .sort((a, b) => {
+            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            return nameA.localeCompare(nameB);
+          })
+          .forEach((student) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+          <td>${student.id}</td>
+          <td>${student.firstName} ${student.lastName}</td>
+          <td>${student.grade}</td>
+          <td>${student.gender}</td>
+          <td>${student.phone}</td>
+          <td>${student.emergencyName} (${student.emergencyPhone})</td>
+          <td>${student.username}</td>
+          <td>
+            <button onclick="editStudent(${student.id})" class="secondary" style="padding:4px 8px;font-size:12px;">Edit</button>
+            <button onclick="deleteStudent(${student.id})" style="padding:4px 8px;font-size:12px;color:red;">Delete</button>
+          </td>
+        `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      function renderTeachersTable() {
+        const tbody = document.getElementById("teachersTableBody");
+        tbody.innerHTML = "";
+
+        teachers
+          .sort((a, b) => {
+            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            return nameA.localeCompare(nameB);
+          })
+          .forEach((teacher) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+          <td>${teacher.id}</td>
+          <td>${teacher.firstName} ${teacher.lastName}</td>
+          <td>${teacher.subjectSpecialty}</td>
+          <td>${teacher.gradeLevels.join(", ")}</td>
+          <td>${teacher.username}</td>
+          <td>
+            <button onclick="deleteTeacher(${teacher.id})" style="padding:4px 8px;font-size:12px;color:red;">Delete</button>
+          </td>
+        `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      function renderCommentsTable() {
+        const tbody = document.getElementById("commentsTableBody");
+        tbody.innerHTML = "";
+
+        comments.forEach((comment) => {
+          const student = students.find((s) => s.id === comment.student_id);
+          const studentName = student
+            ? `${student.firstName} ${student.lastName}`
+            : "Unknown";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td>${comment.id}</td>
+          <td>${studentName} (${comment.student_id})</td>
+          <td>${comment.text}</td>
+          <td>${comment.response || "-"}</td>
+          <td>${comment.status}</td>
+          <td>
+            <button onclick="deleteComment(${
+              comment.id
+            })" style="padding:4px 8px;font-size:12px;color:red;">Delete</button>
+          </td>
+        `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function editStudent(id) {
+        alert(
+          `Edit student ${id} - This would open an edit form in a real application`
+        );
+      }
+
+      function deleteStudent(id) {
+        if (
+          confirm(
+            `Are you sure you want to delete student ${id}? This will also delete all their scores and comments.`
+          )
+        ) {
+          students = students.filter((s) => s.id !== id);
+          scores = scores.filter((s) => s.student_id !== id);
+          comments = comments.filter((c) => c.student_id !== id);
+          saveData();
+          renderStudentsTable();
+          renderCommentsTable();
+        }
+      }
+
+      function deleteTeacher(id) {
+        if (
+          confirm(
+            `Are you sure you want to delete teacher ${id}? This will remove all their associated data.`
+          )
+        ) {
+          teachers = teachers.filter((t) => t.id !== id);
+          saveData();
+          renderTeachersTable();
+        }
+      }
+
+      function deleteComment(id) {
+        if (confirm("Delete this comment?")) {
+          comments = comments.filter((c) => c.id !== id);
+          saveData();
+          renderCommentsTable();
+          if (currentUser.role === "teacher") {
+            renderTeacherComments();
+          }
+        }
+      }
+
+      if (currentUser) {
+        if (currentUser.role === "student") showPage("studentPage");
+        else if (currentUser.role === "teacher") showPage("teacherPage");
+        else if (currentUser.role === "admin") showPage("adminPage");
+        initializeDashboard();
+      } else {
+        showPage("loginPage");
+      }
+    </script>
+  </body>
+</html>
